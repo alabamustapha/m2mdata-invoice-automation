@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d4842c22e789d247c4b660e69490545f",
+    "content-hash": "b7408e439ab98bac4b45e70d55f18f6a",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -121,6 +121,68 @@
                 }
             ],
             "time": "2021-08-15T20:50:18+00:00"
+        },
+        {
+            "name": "dcblogdev/laravel-xero",
+            "version": "v1.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/dcblogdev/laravel-xero.git",
+                "reference": "3dd0e1dcff81eae19274ba01edf50d0ee8178a15"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/dcblogdev/laravel-xero/zipball/3dd0e1dcff81eae19274ba01edf50d0ee8178a15",
+                "reference": "3dd0e1dcff81eae19274ba01edf50d0ee8178a15",
+                "shasum": ""
+            },
+            "require": {
+                "guzzlehttp/guzzle": "^6|^7"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Dcblogdev\\Xero\\XeroServiceProvider"
+                    ],
+                    "aliases": {
+                        "Xero": "Dcblogdev\\Xero\\Facades\\Xero"
+                    }
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Dcblogdev\\Xero\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "David Carr",
+                    "email": "dave@dcblog.dev",
+                    "homepage": "https://dcblog.dev"
+                }
+            ],
+            "description": "A Laravel Xero package",
+            "homepage": "https://github.com/dcblogdev/laravel-xero",
+            "keywords": [
+                "laravel",
+                "xero"
+            ],
+            "support": {
+                "issues": "https://github.com/dcblogdev/laravel-xero/issues",
+                "source": "https://github.com/dcblogdev/laravel-xero/tree/v1.0.1"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/dcblogdev",
+                    "type": "github"
+                }
+            ],
+            "time": "2021-05-15T10:07:11+00:00"
         },
         {
             "name": "dflydev/dot-access-data",
