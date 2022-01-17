@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -15,6 +17,13 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return "hello";
+});
+
+
+
+Route::post('/webhook/order_created', function (Request $request) {
+    Log::info("Received");
+    Log::info(json_encode($request->all()));
 });
 
 
