@@ -18,7 +18,7 @@ class EnsureXeroIsConnected
     public function handle(Request $request, Closure $next)
     {
         if (! Xero::isConnected()) {
-            return redirect('xero/connect');
+            return Xero::connect();
         }
 
         return $next($request);

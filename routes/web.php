@@ -34,135 +34,133 @@ Route::post('customers/{customer}/send_invoice', [CustomerController::class, 'se
 
 Route::post('/webhook/order_created', function (Request $request) {
 
-Log::info("Received");
-Log::info(json_encode($request->all()));
+    Log::info("Received");
+    Log::info(json_encode($request->all()));
 
-$order_data = $request->all();
+    $order_data = $request->all();
+    $order_date = $order_data['date_created'];
+    $date_completed = $order_data['date_completed'];
 
+    $order_date = explode('T', $order_date);
+    $order_date = implode(" ", $order_date);
 
-$order_date = $order_data['date_created'];
-$date_completed = $order_data['date_completed'];
-
-$order_date = explode('T', $order_date);
-$order_date = implode(" ", $order_date);
-
-$date_completed = explode('T', $date_completed);
-$date_completed = implode(" ", $date_completed);
+    $date_completed = explode('T', $date_completed);
+    $date_completed = implode(" ", $date_completed);
 
 
-// $order_date_carbon = Carbon("yyyy-MM-dd HH:mm:ss", $order_date);
-$order_date_carbon = new Carbon($order_date, 'Europe/London');
-$date_completed_carbon = new Carbon($date_completed, 'Europe/London');
+    // $order_date_carbon = Carbon("yyyy-MM-dd HH:mm:ss", $order_date);
+    $order_date_carbon = new Carbon($order_date, 'Europe/London');
+    $date_completed_carbon = new Carbon($date_completed, 'Europe/London');
 
-if($order_date_carbon->day < 7){
-    $prorated_days = 7 - $order_date_carbon->day; //days to 7th of the current month
-    $next_order_date = $order_date_carbon->addDays($prorated_days);
-}else if($order_date_carbon->day > 7){
-    $prorated_days = ($order_date_carbon->daysInMonth + 7) - $order_date_carbon->day; //days to 7th of next month
-    $next_order_date = $order_date_carbon->addDays($prorated_days);
-}else{
-    $prorated_days = 0;
-    $next_order_date = $order_date_carbon;
-}
-
-$order_status = $order_data["status"];
-$order_id = $order_data["id"];
-$customer_id = $order_data["customer_id"];
-$order_total = $order_data["total"];
-$billing_info = $order_data["billing"];
-
-
-// Get all line items from order
-$line_items = [];
-foreach($order_data["line_items"] as $line_item){
-
-    $line_item_meta_data = $line_item["meta_data"];
-
-    $line_pool_summary = Arr::first($line_item_meta_data, function ($value, $key) {
-        return $value["key"] == "Pool summary";
-    });
-
-    $line_pool_summary_table = $line_pool_summary["value"];
-    $crawler = new Crawler($line_pool_summary_table);
-
-
-    $base_mb = $crawler->filter(".sms_plan_cart_table:nth-of-type(1) tbody .sms_plan_tr td:nth-of-type(1)")->text();
-    $base_mb_price = $crawler->filter(".sms_plan_cart_table:nth-of-type(1) tbody .sms_plan_tr td:nth-of-type(2)")->text();
-    $base_mb_price = (float)ltrim($base_mb_price, '£');
-
-
-    $total_monthly_mb = $crawler->filter(".sms_plan_cart_table:nth-of-type(2) tbody tr:nth-of-type(2) td:nth-of-type(2)")->text();
-    $total_monthly_mb_price = $crawler->filter(".sms_plan_cart_table:nth-of-type(3) tbody tr:nth-of-type(2) td:nth-of-type(4)")->text();
-    $total_monthly_mb_price = (float)ltrim($total_monthly_mb_price, '£');
-
-
-
-    if($prorated_days > 0){
-        $total_prorated_mb = ($total_monthly_mb / 30) * $prorated_days;
-        $total_prorated_mb_price = ($total_monthly_mb_price / 30) * $prorated_days;
+    if($order_date_carbon->day < 7){
+        $prorated_days = 7 - $order_date_carbon->day; //days to 7th of the current month
+        $next_order_date = $order_date_carbon->addDays($prorated_days);
+    }else if($order_date_carbon->day > 7){
+        $prorated_days = ($order_date_carbon->daysInMonth + 7) - $order_date_carbon->day; //days to 7th of next month
+        $next_order_date = $order_date_carbon->addDays($prorated_days);
     }else{
-        $total_prorated_mb = 0;
-        $total_prorated_mb_price = 0;
+        $prorated_days = 0;
+        $next_order_date = $order_date_carbon;
     }
 
-    $total_prorated_mb = round($total_prorated_mb, 2);
-    $total_prorated_mb_price = round($total_prorated_mb_price, 2);
+    $order_status = $order_data["status"];
+    $order_id = $order_data["id"];
+    $customer_id = $order_data["customer_id"];
+    $order_total = $order_data["total"];
+    $billing_info = $order_data["billing"];
+
+
+    // Get all line items from order
+    $line_items = [];
+    foreach($order_data["line_items"] as $line_item){
+
+        $line_item_meta_data = $line_item["meta_data"];
+
+        $line_pool_summary = Arr::first($line_item_meta_data, function ($value, $key) {
+            return $value["key"] == "Pool summary";
+        });
+
+        $line_pool_summary_table = $line_pool_summary["value"];
+        $crawler = new Crawler($line_pool_summary_table);
+
+
+        $base_mb = $crawler->filter(".sms_plan_cart_table:nth-of-type(1) tbody .sms_plan_tr td:nth-of-type(1)")->text();
+        $base_mb_price = $crawler->filter(".sms_plan_cart_table:nth-of-type(1) tbody .sms_plan_tr td:nth-of-type(2)")->text();
+        $base_mb_price = (float)ltrim($base_mb_price, '£');
+
+
+        $total_monthly_mb = $crawler->filter(".sms_plan_cart_table:nth-of-type(2) tbody tr:nth-of-type(2) td:nth-of-type(2)")->text();
+        $total_monthly_mb_price = $crawler->filter(".sms_plan_cart_table:nth-of-type(3) tbody tr:nth-of-type(2) td:nth-of-type(4)")->text();
+        $total_monthly_mb_price = (float)ltrim($total_monthly_mb_price, '£');
 
 
 
-    $sms_mt_base_price = $crawler->filter(".sms_plan_cart_table:nth-of-type(3) tbody tr:nth-of-type(3) td:nth-of-type(2)")->text();
-    $sms_mt_base_price = (float)ltrim($sms_mt_base_price, '£');
+        if($prorated_days > 0){
+            $total_prorated_mb = ($total_monthly_mb / 30) * $prorated_days;
+            $total_prorated_mb_price = ($total_monthly_mb_price / 30) * $prorated_days;
+        }else{
+            $total_prorated_mb = 0;
+            $total_prorated_mb_price = 0;
+        }
 
-    $sms_mt_qty = $crawler->filter(".sms_plan_cart_table:nth-of-type(3) tbody tr:nth-of-type(3) td:nth-of-type(3)")->text();
-
-    $sms_mt_total_price = $crawler->filter(".sms_plan_cart_table:nth-of-type(3) tbody tr:nth-of-type(3) td:nth-of-type(4)")->text();
-    $sms_mt_total_price = (float)ltrim($sms_mt_total_price, '£');
-
-    $sms_mt_prorated_qty = ($sms_mt_qty / 30) * $prorated_days;
-    $sms_mt_prorated_total_price = ($sms_mt_total_price / 30) * $prorated_days;
-
-
-
-    $sms_mo_base_price = $crawler->filter(".sms_plan_cart_table:nth-of-type(3) tbody tr:nth-of-type(4) td:nth-of-type(2)")->text();
-    $sms_mo_base_price = (float)ltrim($sms_mo_base_price, '£');
-
-    $sms_mo_qty = $crawler->filter(".sms_plan_cart_table:nth-of-type(3) tbody tr:nth-of-type(4) td:nth-of-type(3)")->text();
-
-    $sms_mo_total_price = $crawler->filter(".sms_plan_cart_table:nth-of-type(3) tbody tr:nth-of-type(4) td:nth-of-type(4)")->text();
-    $sms_mo_total_price = (float)ltrim($sms_mo_total_price, '£');
-
-    $sms_mo_prorated_qty = ($sms_mo_qty / 30) * $prorated_days;
-    $sms_mo_prorated_total_price = ($sms_mo_total_price / 30) * $prorated_days;
+        $total_prorated_mb = round($total_prorated_mb, 2);
+        $total_prorated_mb_price = round($total_prorated_mb_price, 2);
 
 
 
-    $summary = [
-        "line_id" => $line_item["id"],
-        "product_name" => $line_item["name"],
-        "product_id" => $line_item["product_id"],
-        "variation_id" => $line_item["variation_id"],
-        "quantity" => $line_item["quantity"],
-        "base_mb" => $base_mb,
-        "prorated_days" => $prorated_days,
-        "base_mb_price" => $base_mb_price,
-        "total_monthly_mb" => $total_monthly_mb,
-        "total_monthly_mb_price" => $total_monthly_mb_price,
-        "total_prorated_mb" => $total_prorated_mb,
-        "total_prorated_mb_price" => $total_prorated_mb_price,
-        "sms_mt_base_price" => $sms_mt_base_price,
-        "sms_mt_qty" => $sms_mt_qty,
-        "sms_mt_total_price" => $sms_mt_total_price,
-        "sms_mt_prorated_qty" => $sms_mt_prorated_qty,
-        "sms_mt_prorated_total_price" => $sms_mt_prorated_total_price,
-        "sms_mo_base_price" => $sms_mo_base_price,
-        "sms_mo_qty" => $sms_mo_qty,
-        "sms_mo_total_price" => $sms_mo_total_price,
-        "sms_mo_prorated_qty" => $sms_mo_prorated_qty,
-        "sms_mo_prorated_total_price" => $sms_mo_prorated_total_price
-    ];
+        $sms_mt_base_price = $crawler->filter(".sms_plan_cart_table:nth-of-type(3) tbody tr:nth-of-type(3) td:nth-of-type(2)")->text();
+        $sms_mt_base_price = (float)ltrim($sms_mt_base_price, '£');
 
-    array_push($line_items, $summary);
-}
+        $sms_mt_qty = $crawler->filter(".sms_plan_cart_table:nth-of-type(3) tbody tr:nth-of-type(3) td:nth-of-type(3)")->text();
+
+        $sms_mt_total_price = $crawler->filter(".sms_plan_cart_table:nth-of-type(3) tbody tr:nth-of-type(3) td:nth-of-type(4)")->text();
+        $sms_mt_total_price = (float)ltrim($sms_mt_total_price, '£');
+
+        $sms_mt_prorated_qty = ($sms_mt_qty / 30) * $prorated_days;
+        $sms_mt_prorated_total_price = ($sms_mt_total_price / 30) * $prorated_days;
+
+
+
+        $sms_mo_base_price = $crawler->filter(".sms_plan_cart_table:nth-of-type(3) tbody tr:nth-of-type(4) td:nth-of-type(2)")->text();
+        $sms_mo_base_price = (float)ltrim($sms_mo_base_price, '£');
+
+        $sms_mo_qty = $crawler->filter(".sms_plan_cart_table:nth-of-type(3) tbody tr:nth-of-type(4) td:nth-of-type(3)")->text();
+
+        $sms_mo_total_price = $crawler->filter(".sms_plan_cart_table:nth-of-type(3) tbody tr:nth-of-type(4) td:nth-of-type(4)")->text();
+        $sms_mo_total_price = (float)ltrim($sms_mo_total_price, '£');
+
+        $sms_mo_prorated_qty = ($sms_mo_qty / 30) * $prorated_days;
+        $sms_mo_prorated_total_price = ($sms_mo_total_price / 30) * $prorated_days;
+
+
+
+        $summary = [
+            "line_id" => $line_item["id"],
+            "product_name" => $line_item["name"],
+            "product_id" => $line_item["product_id"],
+            "variation_id" => $line_item["variation_id"],
+            "quantity" => $line_item["quantity"],
+            "base_mb" => $base_mb,
+            "prorated_days" => $prorated_days,
+            "base_mb_price" => $base_mb_price,
+            "total_monthly_mb" => $total_monthly_mb,
+            "total_monthly_mb_price" => $total_monthly_mb_price,
+            "total_prorated_mb" => $total_prorated_mb,
+            "total_prorated_mb_price" => $total_prorated_mb_price,
+            "sms_mt_base_price" => $sms_mt_base_price,
+            "sms_mt_qty" => $sms_mt_qty,
+            "sms_mt_total_price" => $sms_mt_total_price,
+            "sms_mt_prorated_qty" => $sms_mt_prorated_qty,
+            "sms_mt_prorated_total_price" => $sms_mt_prorated_total_price,
+            "sms_mo_base_price" => $sms_mo_base_price,
+            "sms_mo_qty" => $sms_mo_qty,
+            "sms_mo_total_price" => $sms_mo_total_price,
+            "sms_mo_prorated_qty" => $sms_mo_prorated_qty,
+            "sms_mo_prorated_total_price" => $sms_mo_prorated_total_price
+        ];
+
+        array_push($line_items, $summary);
+    }
 
 
     $order = Order::create([
@@ -192,54 +190,9 @@ foreach($order_data["line_items"] as $line_item){
         "shipping" => (array)$customer["shipping"],
         "avatar_url" => $customer["avatar_url"],
     ]);
+
     return true;
 
-
 });
 
-Route::group(['middleware' => ['web']], function(){
-    Route::get('xero', function(){
 
-
-
-        if (! Xero::isConnected()) {
-            return redirect('xero/connect');
-        } else {
-            //display your tenant name
-            var_dump(Xero::getTenantName());
-
-            $contact = Xero::contacts()->get(1, 'EmailAddress="alabamustapha@gmail.com"');
-
-
-            $data = [
-                "Type" => "ACCREC",
-                "Contact" => [
-                  "ContactID" => "cef20e88-8fa4-44b4-a000-916282368f4c"
-                ],
-                'Reference' => "edrrddddasdazaas",
-                "Date" => "2021-12-27T00:00:00",
-                "DueDate" => "2021-12-27T00:00:00",
-                "DateString" => "2021-12-27T00:00:00",
-                "DueDateString" => "2021-12-06T00:00:00",
-                "LineAmountTypes" => "Exclusive",
-                "LineItems" => [
-                  [
-                    "Description" => "Consulting services as agreed (20% off standard rate)",
-                    "Quantity" => 5,
-                    "UnitAmount" => 80.00,
-                    "AccountCode" => 200,
-                    "DiscountRate" => 10
-                  ]
-                ]
-            ];
-            $invoice = Xero::invoices()->store($data);
-
-
-        }
-
-    });
-
-    Route::get('xero/connect', function(){
-        return Xero::connect();
-    });
-});
