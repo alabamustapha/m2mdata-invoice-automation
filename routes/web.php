@@ -193,7 +193,7 @@ foreach($order_data["line_items"] as $line_item){
         "avatar_url" => $customer["avatar_url"],
     ]);
     return true;
-    dd($order);
+
 
 });
 
@@ -210,7 +210,6 @@ Route::group(['middleware' => ['web']], function(){
 
             $contact = Xero::contacts()->get(1, 'EmailAddress="alabamustapha@gmail.com"');
 
-            dd($contact);
 
             $data = [
                 "Type" => "ACCREC",
@@ -235,7 +234,7 @@ Route::group(['middleware' => ['web']], function(){
             ];
             $invoice = Xero::invoices()->store($data);
 
-            dd($invoice);
+
         }
 
     });

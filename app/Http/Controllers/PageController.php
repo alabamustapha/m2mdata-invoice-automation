@@ -10,9 +10,6 @@ use Illuminate\Http\Request;
 class PageController extends Controller
 {
     public function home(){
-
-        $order = Order::first();
-        InvoiceDue::dispatch($order);
         return view('home');
     }
 }
