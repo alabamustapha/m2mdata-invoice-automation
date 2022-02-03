@@ -82,7 +82,14 @@ class Order extends Model
     }
 
     public function getIsProratedAttribute(){
-        return false;
+        return boolval($this->last_invoice_date);
+    }
+
+    public function getInvoiceDateAttribute(){
+        $next_invoice = !$this->last_invoice_date ?
+                                    $this->last_invoice_date:
+                                    $this->last_invoice_date->setMonth($this->last_invoice_date->month + 1)->setday(7);
+        return $next_invoice;
     }
 
 }

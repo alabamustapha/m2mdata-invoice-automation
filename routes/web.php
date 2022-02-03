@@ -28,6 +28,7 @@ Route::get('/', [PageController::class, 'home'])->name('pages.home');
 Route::get('customers', [CustomerController::class, 'index'])->name('customers.index');
 Route::get('customers/{customer}', [CustomerController::class, 'show'])->name('customers.show');
 Route::put('customers/{customer}', [CustomerController::class, 'updateXeroId'])->name('customers.update_xero_id');
+Route::post('customers/{customer}/send_invoice', [CustomerController::class, 'sendInvoice'])->name('customers.send_invoice');
 
 
 

@@ -15,9 +15,18 @@
             </p>
 
             <!-- Button trigger modal -->
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#nextInvoiceModal">
+            <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#nextInvoiceModal">
                 View next invoice
             </button>
+
+
+            <form action="{{ route("customers.send_invoice", $customer->id) }}" method="POST" id="sendInvoiceForm" class="d-none">
+                @csrf
+            </form>
+
+            <button type="submit" class="btn btn-primary" onclick="
+                document.querySelector('form#sendInvoiceForm').submit();
+            ">Send due invoice</button>
 
             <!-- Modal -->
             <div class="modal fade" id="nextInvoiceModal" tabindex="-1" aria-labelledby="nextInvoiceModal" aria-hidden="true">
@@ -75,6 +84,7 @@
             <th>total</th>
             <th>Line items</th>
             <th>Last invoiced date</th>
+            <th>Next invoice</th>
             <th>Prorated days</th>
         </thead>
         <tbody>
@@ -87,6 +97,7 @@
                 <td>{{ $order->total }}</td>
                 <td>{{ count($order->line_items) }}</td>
                 <td>{{ $order->last_invoice_date }}</td>
+                <td>{{ $order->invoice_date }}</td>
                 <td>{{ $order->prorated_days }}</td>
             </tr>
             @endforeach

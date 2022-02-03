@@ -4,8 +4,9 @@ namespace App\Listeners;
 
 use Illuminate\Contracts\Queue\ShouldQueue;
 use App\Events\InvoiceDue;
-use Dcblogdev\Xero\Facades\Xero;
+use Carbon\Carbon;
 use Illuminate\Queue\InteractsWithQueue;
+use Dcblogdev\Xero\Facades\Xero;
 use Illuminate\Support\Facades\Log;
 
 class SendInvoiceToXero
@@ -42,15 +43,17 @@ class SendInvoiceToXero
                 ],
 
                 "Reference" => "edrrddddasdazaas",
-                "Date" => "2021-12-27T00:00:00",
-                "DueDate" => "2021-12-27T00:00:00",
-                "DateString" => "2021-12-27T00:00:00",
-                "DueDateString" => "2021-12-06T00:00:00",
+                "Date" => $event->order->invoice_date,
+                "DueDate" => $event->order->invoice_date,
+                "DateString" => $event->order->invoice_date,
+                "DueDateString" => $event->order->invoice_date,
                 "LineAmountTypes" => "Exclusive",
                 "LineItems" => $event->order->line_items_summary,
             ];
 
             $invoice = Xero::invoices()->store($data);
+            $event->order->last_invoice_date = new Carbon();
+            $event->order->save();
 
             Log::info("Invoice sent");
         }

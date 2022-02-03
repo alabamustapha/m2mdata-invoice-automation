@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\InvoiceDue;
+use App\Jobs\ProcessOrderInvoice;
 use App\Models\Customer;
 use App\Models\Order;
 use Dcblogdev\Xero\Facades\Xero;
@@ -33,6 +35,13 @@ class CustomerController extends Controller
 
         return redirect()->back();
 
+    }
+
+    public function sendInvoice(Customer $customer){
+        foreach($customer->orders as $order){
+            ProcessOrderInvoice::dispatch($order)->onQueue('order-invoices');
+        }
+        return redirect()->back();
     }
 
     public function show(Customer $customer){
