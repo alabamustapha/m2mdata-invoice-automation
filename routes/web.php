@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Route;
 use Symfony\Component\DomCrawler\Crawler;
 use Codexshaper\WooCommerce\Facades\Customer;
 use App\Models\Customer as LaravelCustomer;
+use Dcblogdev\Xero\Facades\Xero;
 
 /*
 |--------------------------------------------------------------------------
@@ -190,6 +191,15 @@ Route::post('/webhook/order_created', function (Request $request) {
         "shipping" => (array)$customer["shipping"],
         "avatar_url" => $customer["avatar_url"],
     ]);
+
+
+    $query = 'EmailAddress="' . $customer->email . '"';
+    $contact = Xero::contacts()->get(1, $query);
+    if(count($contact)){
+        $contact = $contact[0];
+        $customer->xero_id = $contact["ContactID"];
+        $customer->save();
+    }
 
     return true;
 

@@ -57,34 +57,31 @@ class ProcessOrderInvoice implements ShouldQueue
      */
     public function handle()
     {
-        if (! Xero::isConnected()) {
-            Log::info("Xero not connected");
-        } else {
 
-            Log::info("Xero connected, invoice ebing sent " . Xero::getTenantName());
-            Log::info("Xero connected, invoice being sent to" . $this->order->customer->xero_id);
+        Log::info("Xero connected, invoice ebing sent " . Xero::getTenantName());
+        Log::info("Xero connected, invoice being sent to" . $this->order->customer->xero_id);
 
-            $data = [
-                "Type" => "ACCREC",
-                "Contact" => [
-                  "ContactID" => $this->order->customer->xero_id,
-                ],
+        $data = [
+            "Type" => "ACCREC",
+            "Contact" => [
+                "ContactID" => $this->order->customer->xero_id,
+            ],
 
-                "Reference" => "edrrddddasdazaas",
-                "Date" => $this->order->invoice_date,
-                "DueDate" => $this->order->invoice_date,
-                "DateString" => $this->order->invoice_date,
-                "DueDateString" => $this->order->invoice_date,
-                "LineAmountTypes" => "Exclusive",
-                "LineItems" => $this->order->line_items_summary,
-            ];
+            "Reference" => "M2MAUTOMATED-" . Str::random(10),
+            "Date" => $this->order->invoice_date,
+            "DueDate" => $this->order->invoice_date,
+            "DateString" => $this->order->invoice_date,
+            "DueDateString" => $this->order->invoice_date,
+            "LineAmountTypes" => "Exclusive",
+            "LineItems" => $this->order->line_items_summary,
+        ];
 
-            $invoice = Xero::invoices()->store($data);
-            $this->order->last_invoice_date = new Carbon();
-            $this->order->save();
+        $invoice = Xero::invoices()->store($data);
+        $this->order->last_invoice_date = new Carbon();
+        $this->order->save();
 
-            Log::info("Invoice sent");
-        }
+        Log::info("Invoice sent");
+
     }
 
 }

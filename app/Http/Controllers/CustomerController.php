@@ -18,19 +18,14 @@ class CustomerController extends Controller
     }
 
     public function updateXeroId(Customer $customer){
-        if (! Xero::isConnected()) {
-                return redirect('xero/connect');
-            } else {
-            $query = 'EmailAddress="' . $customer->email . '"';
-            $contact = Xero::contacts()->get(1, $query);
 
-            if(count($contact)){
-                $contact = $contact[0];
-            }
 
+        $query = 'EmailAddress="' . $customer->email . '"';
+        $contact = Xero::contacts()->get(1, $query);
+        if(count($contact)){
+            $contact = $contact[0];
             $customer->xero_id = $contact["ContactID"];
             $customer->save();
-            return redirect()->back();
         }
 
         return redirect()->back();
