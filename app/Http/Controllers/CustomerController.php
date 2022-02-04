@@ -34,7 +34,7 @@ class CustomerController extends Controller
 
     public function sendInvoice(Customer $customer){
         foreach($customer->orders as $order){
-            ProcessOrderInvoice::dispatch($order)->onQueue('order-invoices');
+            ProcessOrderInvoice::dispatchSync($order)->onQueue('order-invoices');
         }
         return redirect()->back();
     }
