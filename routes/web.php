@@ -178,7 +178,7 @@ Route::post('/webhook/order_created', function (Request $request) {
             "prorated_days" => $prorated_days,
         ]);
 
-        $customer_id = 203;
+
         $customer = Customer::find($customer_id);
         $Laravel_customer = LaravelCustomer::firstOrCreate([
             "customer_id" => $customer["id"],
