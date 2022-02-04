@@ -67,7 +67,7 @@ class ProcessOrderInvoice implements ShouldQueue
                 "ContactID" => $this->order->customer->xero_id,
             ],
 
-            "Reference" => "M2MAUTOMATED-" . Str::random(10),
+            "Reference" => "M2MAUTOMATED-" . rand(0,300000),
             "Date" => $this->order->invoice_date,
             "DueDate" => $this->order->invoice_date,
             "DateString" => $this->order->invoice_date,
